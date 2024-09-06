@@ -1,10 +1,6 @@
 platform "ubuntu-22.04-amd64" do |plat|
   plat.inherit_from_default
 
-  plat.docker_run_args ['--tty', '--entrypoint=/bin/sh']
-  plat.docker_image "amd64/ubuntu:22.04"
-  plat.use_docker_exec true
-
   packages = %w(
     libbz2-dev
     libreadline-dev
