@@ -157,4 +157,6 @@ project 'pdk-runtime' do |proj|
   proj.publish_yaml_settings
 
   proj.timeout 7200 if platform.is_windows?
+
+  proj.component 'pl-ruby-patch' if platform.is_cross_compiled?
 end
