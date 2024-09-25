@@ -127,18 +127,24 @@ project 'pdk-runtime' do |proj|
     proj.setting(:cflags, proj.cppflags.to_s)
     proj.setting(:ldflags, "-L#{proj.tools_root}/lib -L#{proj.gcc_root}/lib -L#{proj.libdir}")
   elsif platform.is_macos?
-    proj.setting(:cppflags, "-I#{proj.includedir}")
-    proj.setting(:cflags, "#{proj.cppflags}")
-
-    # Since we are cross-compiling for later use, we can only optimize for
-    # the oldest supported platform and even up to macOS 10.13 there are
-    # a few Core 2 hardware platforms supported. (4 May 2018)
-    proj.setting(:cflags, "-march=core2 -msse4 #{proj.cflags}") unless platform.architecture == 'arm64'
-
-    # OS X doesn't use RPATH for linking. We shouldn't
+    # For macOS, we should optimize for an older architecture than Apple
+    # currently ships for; there's a lot of older xeon chips based on
+    # that architecture still in use throughout the Mac ecosystem.
+    # Additionally, macOS doesn't use RPATH for linking. We shouldn't
     # define it or try to force it in the linker, because this might
     # break gcc or clang if they try to use the RPATH values we forced.
+    proj.setting(:cppflags, "-I#{proj.includedir}")
     proj.setting(:ldflags, "-L#{proj.libdir} ")
+    if platform.is_cross_compiled?
+      puts("test123")
+      # The core2 architecture is not available on M1 Macs
+      proj.setting(:cflags, "#{proj.cppflags}")
+      proj.setting(:host, "--host aarch64-apple-darwin --build x86_64-apple-darwin --target aarch64-apple-darwin")
+    elsif platform.architecture == 'arm64'
+      proj.setting(:cflags, "#{proj.cppflags}")
+    else
+      proj.setting(:cflags, "-march=core2 -msse4 #{proj.cppflags}")
+    end
   end
 
   # We want PDK's vendored Git binary to use system-wide gitconfig.
